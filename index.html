@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tema 2 · Ficheros GNU/Linux — Práctica interactiva</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🐧 Tema 2 — Organización de un SO tipo GNU/Linux</h1>
+    <p class="subtitle">Sistema de ficheros · permisos · enlaces · FHS — Práctica interactiva</p>
+    <nav class="tabs">
+      <button class="tab active" data-tab="terminal">💻 Terminal</button>
+      <button class="tab" data-tab="ejercicios">📝 Ejercicios</button>
+      <button class="tab" data-tab="test">❓ Test</button>
+      <button class="tab" data-tab="resumen">📚 Resumen</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= TERMINAL ================= -->
+    <section id="terminal" class="panel active">
+      <h2>Terminal Linux interactiva</h2>
+      <p class="intro">Un mini-shell con sistema de ficheros virtual para practicar de verdad: <code>ls -l</code>, <code>chmod</code> (simbólico y octal), <code>chown</code>, <code>ln</code>, <code>ln -s</code>, <code>umask</code>, <code>touch</code>, <code>mkdir</code>… Escribe <code>help</code> para empezar. Las flechas ↑/↓ recorren el historial.</p>
+      <div id="term" class="terminal">
+        <div id="term-output" class="term-output"></div>
+        <div class="term-input-line">
+          <span id="term-prompt" class="prompt"></span>
+          <input id="term-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+        </div>
+      </div>
+      <div class="term-quick">
+        <span>Pruébalo:</span>
+        <button class="chip" data-cmd="ls -la">ls -la</button>
+        <button class="chip" data-cmd="touch ejemplo">touch ejemplo</button>
+        <button class="chip" data-cmd="chmod 754 ejemplo">chmod 754 ejemplo</button>
+        <button class="chip" data-cmd="ls -l ejemplo">ls -l ejemplo</button>
+        <button class="chip" data-cmd="umask 027">umask 027</button>
+        <button class="chip" data-cmd="ln -s ejemplo acceso">ln -s ejemplo acceso</button>
+        <button class="chip" data-cmd="reset">reset</button>
+      </div>
+    </section>
+
+    <!-- ================= EJERCICIOS ================= -->
+    <section id="ejercicios" class="panel">
+      <h2>Ejercicios del PDF</h2>
+      <p class="intro">Resuélvelos en la terminal de abajo y pulsa <b>Comprobar</b>. Cada ejercicio valida el estado real del sistema de ficheros.</p>
+      <div id="ex-list"></div>
+      <h3>Terminal de los ejercicios</h3>
+      <div id="term2" class="terminal">
+        <div id="term2-output" class="term-output"></div>
+        <div class="term-input-line">
+          <span id="term2-prompt" class="prompt"></span>
+          <input id="term2-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TEST ================= -->
+    <section id="test" class="panel">
+      <h2>Preguntas tipo test</h2>
+      <div class="test-controls">
+        <label><input type="radio" name="qsrc" value="mias" checked> Mis preguntas</label>
+        <label><input type="radio" name="qsrc" value="prof"> Preguntas del profesor (Wayground)</label>
+        <label><input type="checkbox" id="shuffle"> Barajar</label>
+        <button id="start-quiz" class="btn">Empezar test</button>
+      </div>
+      <div id="prof-note" class="note hidden">
+        ⚠️ Las preguntas del profesor del enlace de Wayground no se pudieron extraer automáticamente
+        (es una partida en vivo que requiere unirse con el código activo). Pega tus preguntas en
+        <code>data.js</code> → <code>profQuiz</code> y aparecerán aquí.
+      </div>
+      <div id="quiz-area"></div>
+    </section>
+
+    <!-- ================= RESUMEN ================= -->
+    <section id="resumen" class="panel">
+      <h2>Resumen para repasar</h2>
+      <div id="summary-area"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Generado para el repaso del Tema 2 · Programación y Administración de Sistemas (2025-2026)</p>
+  </footer>
+
+  <script src="terminal.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
