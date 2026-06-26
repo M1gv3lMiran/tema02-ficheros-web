@@ -1,23 +1,39 @@
 /* ===========================================================================
- *  Lógica de la interfaz: pestañas, terminales, ejercicios, test y resumen.
+ *  Lógica de la interfaz: temas, pestañas, terminales, ejercicios, test y resumen.
  * ========================================================================= */
 (function () {
   "use strict";
   const $ = (s, c) => (c || document).querySelector(s);
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+  const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  // ---------- Pestañas ------------------------------------------------------
-  $$(".tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      $$(".tab").forEach((t) => t.classList.remove("active"));
-      $$(".panel").forEach((p) => p.classList.remove("active"));
-      tab.classList.add("active");
-      $("#" + tab.dataset.tab).classList.add("active");
+  // ---------- Selector de tema ---------------------------------------------
+  $$(".themebtn").forEach((b) => {
+    b.addEventListener("click", () => {
+      $$(".themebtn").forEach((x) => x.classList.remove("active"));
+      $$(".theme-content").forEach((x) => x.classList.remove("active"));
+      b.classList.add("active");
+      $("#" + b.dataset.theme).classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  // ---------- Pestañas (con ámbito por tema) -------------------------------
+  $$(".theme-content").forEach((content) => {
+    const tabs = $$(".tab", content);
+    const panels = $$(".panel", content);
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        panels.forEach((p) => p.classList.remove("active"));
+        tab.classList.add("active");
+        $("#" + tab.dataset.tab, content).classList.add("active");
+      });
     });
   });
 
   // ---------- Terminal genérica --------------------------------------------
-  function attachTerminal(shell, ids) {
+  function attachTerminal(shell, ids, welcome) {
     const out = $("#" + ids.out);
     const input = $("#" + ids.input);
     const promptEl = $("#" + ids.prompt);
@@ -26,24 +42,19 @@
     let hi = -1;
 
     function refreshPrompt() { promptEl.textContent = shell.prompt(); }
-
     function print(html) {
       const div = document.createElement("div");
       div.innerHTML = html;
       out.appendChild(div);
       wrap.scrollTop = wrap.scrollHeight;
     }
-    function esc(s) {
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
     function run(line) {
-      print('<span class="prompt">' + esc(shell.prompt()) + '</span><span class="cmd-echo">' + esc(line) + "</span>");
+      print('<span class="prompt">' + escapeHtml(shell.prompt()) + '</span><span class="cmd-echo">' + escapeHtml(line) + "</span>");
       const r = shell.exec(line);
       if (r.clear) { out.innerHTML = ""; }
       else {
-        if (r.out) print(esc(r.out));
-        if (r.err) print('<span class="err">' + esc(r.err) + "</span>");
+        if (r.out) print(escapeHtml(r.out));
+        if (r.err) print('<span class="err">' + escapeHtml(r.err) + "</span>");
       }
       refreshPrompt();
     }
@@ -68,85 +79,77 @@
 
     wrap.addEventListener("click", () => input.focus());
     refreshPrompt();
-    print('<span style="color:#8b949e">Mini-shell del Tema 2. Escribe <b style="color:#7ee787">help</b> para ver los comandos.</span>');
+    if (welcome) print('<span style="color:#8b949e">' + welcome + "</span>");
     return { run, refreshPrompt };
   }
 
-  // Terminal principal
-  const shell1 = new LinuxShell();
-  const term1 = attachTerminal(shell1, { out: "term-output", input: "term-input", prompt: "term-prompt", wrap: "term" });
-  $$(".chip").forEach((c) =>
-    c.addEventListener("click", () => { term1.run(c.dataset.cmd); $("#term-input").focus(); })
-  );
+  // ---------- Render de ejercicios (reutilizable) --------------------------
+  function renderExercises(container, exercises, termRun, shell) {
+    exercises.forEach((ex) => {
+      const card = document.createElement("div");
+      card.className = "ex-card";
 
-  // Terminal de ejercicios (shell independiente)
-  const shell2 = new LinuxShell();
-  const term2 = attachTerminal(shell2, { out: "term2-output", input: "term2-input", prompt: "term2-prompt", wrap: "term2" });
+      if (ex.concept) {
+        card.innerHTML =
+          '<h4>' + ex.title + " <span class='tag'>concepto</span></h4>" +
+          "<div>" + ex.desc + "</div>" +
+          '<div class="ex-actions"><button class="btn secondary" data-act="ans">Ver respuesta</button></div>' +
+          '<div class="ex-detail"></div>';
+        const detail = $(".ex-detail", card);
+        $('button[data-act="ans"]', card).addEventListener("click", () => {
+          detail.classList.toggle("show");
+          detail.innerHTML = ex.answer;
+        });
+        container.appendChild(card);
+        return;
+      }
 
-  // ---------- Ejercicios ----------------------------------------------------
-  const exList = $("#ex-list");
-  DATA.exercises.forEach((ex, i) => {
-    const card = document.createElement("div");
-    card.className = "ex-card";
-    card.innerHTML =
-      '<h4>' + ex.title + "</h4>" +
-      "<div>" + ex.desc + "</div>" +
-      '<div class="ex-goal">🎯 Objetivo: ' + ex.goal + "</div>" +
-      '<div class="ex-actions">' +
-        (ex.setup ? '<button class="btn secondary" data-act="setup">Preparar</button>' : "") +
-        '<button class="btn" data-act="check">Comprobar</button>' +
-        '<button class="btn secondary" data-act="hint">Pista</button>' +
-        '<button class="btn secondary" data-act="sol">Ver solución</button>' +
-        '<span class="ex-status"></span>' +
-      "</div>" +
-      '<div class="ex-detail"></div>';
-    exList.appendChild(card);
+      card.innerHTML =
+        '<h4>' + ex.title + "</h4>" +
+        "<div>" + ex.desc + "</div>" +
+        '<div class="ex-goal">🎯 Objetivo: ' + ex.goal + "</div>" +
+        '<div class="ex-actions">' +
+          (ex.setup ? '<button class="btn secondary" data-act="setup">Preparar</button>' : "") +
+          '<button class="btn" data-act="check">Comprobar</button>' +
+          '<button class="btn secondary" data-act="hint">Pista</button>' +
+          '<button class="btn secondary" data-act="sol">Ver solución</button>' +
+          '<span class="ex-status"></span>' +
+        "</div>" +
+        '<div class="ex-detail"></div>';
+      container.appendChild(card);
 
-    const status = $(".ex-status", card);
-    const detail = $(".ex-detail", card);
+      const status = $(".ex-status", card);
+      const detail = $(".ex-detail", card);
 
-    $$('button[data-act]', card).forEach((b) => {
-      b.addEventListener("click", () => {
-        const act = b.dataset.act;
-        if (act === "setup") {
-          ex.setup.split("\n").forEach((c) => c.trim() && term2.run(c.trim()));
-          detail.classList.add("show");
-          detail.innerHTML = "🔧 Comandos de preparación ejecutados en la terminal de ejercicios.";
-        } else if (act === "hint") {
-          detail.classList.add("show");
-          detail.innerHTML = "💡 <b>Pista:</b> " + ex.hint;
-        } else if (act === "sol") {
-          detail.classList.add("show");
-          detail.innerHTML = "✅ <b>Solución:</b><br>" + ex.solutionText;
-        } else if (act === "check") {
-          let ok = false;
-          try { ok = ex.check(shell2); } catch (e) { ok = false; }
-          status.textContent = ok ? "✔ Correcto" : "✗ Aún no";
-          status.className = "ex-status " + (ok ? "ok" : "fail");
-          if (!ok) {
+      $$('button[data-act]', card).forEach((b) => {
+        b.addEventListener("click", () => {
+          const act = b.dataset.act;
+          if (act === "setup") {
+            ex.setup.split("\n").forEach((c) => c.trim() && termRun(c.trim()));
             detail.classList.add("show");
-            detail.innerHTML = "❌ Todavía no se cumple el objetivo. Revisa el estado con <code>ls -l</code> en la terminal de ejercicios. " +
-              "Recuerda: <i>" + ex.goal + "</i>";
-          } else {
+            detail.innerHTML = "🔧 Comandos de preparación ejecutados en la terminal de ejercicios.";
+          } else if (act === "hint") {
             detail.classList.add("show");
-            detail.innerHTML = "🎉 ¡Bien! " + ex.goal;
+            detail.innerHTML = "💡 <b>Pista:</b> " + ex.hint;
+          } else if (act === "sol") {
+            detail.classList.add("show");
+            detail.innerHTML = "✅ <b>Solución:</b><br>" + ex.solutionText;
+          } else if (act === "check") {
+            let ok = false;
+            try { ok = ex.check(shell); } catch (e) { ok = false; }
+            status.textContent = ok ? "✔ Correcto" : "✗ Aún no";
+            status.className = "ex-status " + (ok ? "ok" : "fail");
+            detail.classList.add("show");
+            detail.innerHTML = ok
+              ? "🎉 ¡Bien! " + ex.goal
+              : "❌ Todavía no se cumple el objetivo. Revisa el estado en la terminal de ejercicios. Recuerda: <i>" + ex.goal + "</i>";
           }
-        }
+        });
       });
     });
-  });
+  }
 
-  // ---------- Test ----------------------------------------------------------
-  const quizArea = $("#quiz-area");
-  const profNote = $("#prof-note");
-
-  $$('input[name="qsrc"]').forEach((r) =>
-    r.addEventListener("change", () => {
-      const prof = $('input[name="qsrc"][value="prof"]').checked;
-      profNote.classList.toggle("hidden", !(prof && DATA.profQuiz.length === 0));
-    })
-  );
-
+  // ---------- Test (reutilizable) ------------------------------------------
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -156,24 +159,37 @@
     return a;
   }
 
-  $("#start-quiz").addEventListener("click", () => {
-    const src = $('input[name="qsrc"]:checked').value;
-    let questions = src === "prof" ? DATA.profQuiz : DATA.quiz;
-    if (src === "prof" && questions.length === 0) {
-      profNote.classList.remove("hidden");
-      quizArea.innerHTML = "";
-      return;
-    }
-    if ($("#shuffle").checked) questions = shuffle(questions);
-    renderQuiz(questions);
-  });
+  function setupQuiz(cfg) {
+    const startBtn = $("#" + cfg.startBtn);
+    const area = $("#" + cfg.area);
+    const profNote = $("#" + cfg.profNote);
+    const shuffleBox = $("#" + cfg.shuffleBox);
 
-  function renderQuiz(questions) {
-    quizArea.innerHTML = "";
+    $$('input[name="' + cfg.srcName + '"]').forEach((r) =>
+      r.addEventListener("change", () => {
+        const prof = $('input[name="' + cfg.srcName + '"][value="prof"]').checked;
+        profNote.classList.toggle("hidden", !(prof && cfg.data.profQuiz.length === 0));
+      })
+    );
+
+    startBtn.addEventListener("click", () => {
+      const src = $('input[name="' + cfg.srcName + '"]:checked').value;
+      let questions = src === "prof" ? cfg.data.profQuiz : cfg.data.quiz;
+      if (src === "prof" && questions.length === 0) {
+        profNote.classList.remove("hidden");
+        area.innerHTML = "";
+        return;
+      }
+      if (shuffleBox.checked) questions = shuffle(questions);
+      renderQuiz(area, questions);
+    });
+  }
+
+  function renderQuiz(area, questions) {
+    area.innerHTML = "";
     let answered = 0, correct = 0;
-
     const scoreBar = document.createElement("div");
-    scoreBar.id = "quiz-score";
+    scoreBar.className = "quiz-score";
     scoreBar.textContent = "0 / " + questions.length + " respondidas · 0 aciertos";
 
     questions.forEach((qq, i) => {
@@ -185,24 +201,22 @@
       });
       card.innerHTML =
         '<div class="q-num">Pregunta ' + (i + 1) + " de " + questions.length + "</div>" +
-        '<div class="q-text">' + escapeHtml(qq.q) + "</div>" +
-        opts +
+        '<div class="q-text">' + escapeHtml(qq.q) + "</div>" + opts +
         '<div class="q-exp"></div>';
-      quizArea.appendChild(card);
+      area.appendChild(card);
 
       const exp = $(".q-exp", card);
       let done = false;
       $$(".q-opt", card).forEach((opt) => {
         opt.addEventListener("click", () => {
           if (done) return;
-          done = true;
-          answered++;
+          done = true; answered++;
           const chosen = parseInt(opt.dataset.i, 10);
           $$(".q-opt", card).forEach((o, idx) => {
             o.classList.add("disabled");
             if (idx === qq.a) o.classList.add("correct");
           });
-          if (chosen === qq.a) { correct++; }
+          if (chosen === qq.a) correct++;
           else { opt.classList.add("wrong"); exp.classList.add("bad"); }
           exp.classList.add("show");
           exp.innerHTML = (chosen === qq.a ? "✅ <b>Correcto.</b> " : "❌ <b>Incorrecto.</b> ") + escapeHtml(qq.exp);
@@ -210,27 +224,46 @@
         });
       });
     });
-
-    quizArea.appendChild(scoreBar);
-    quizArea.scrollIntoView({ behavior: "smooth", block: "start" });
+    area.appendChild(scoreBar);
+    area.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // ---------- Resumen (reutilizable) ---------------------------------------
+  function renderSummary(container, summary) {
+    summary.forEach((sec, idx) => {
+      const det = document.createElement("details");
+      det.className = "sum-card";
+      if (idx === 0) det.open = true;
+      det.innerHTML = "<summary>" + sec.h + "</summary><ul>" +
+        sec.points.map((p) => "<li>" + p + "</li>").join("") + "</ul>";
+      container.appendChild(det);
+    });
   }
 
-  // ---------- Práctica de permisos absolutos --------------------------------
+  // ========================================================================
+  //  TEMA 2
+  // ========================================================================
+  const shell1 = new LinuxShell();
+  const term1 = attachTerminal(shell1,
+    { out: "term-output", input: "term-input", prompt: "term-prompt", wrap: "term" },
+    'Mini-shell del Tema 2. Escribe <b style="color:#7ee787">help</b> para ver los comandos.');
+  $$(".chip", $("#theme-t2")).forEach((c) =>
+    c.addEventListener("click", () => { term1.run(c.dataset.cmd); $("#term-input").focus(); }));
+
+  const shell2 = new LinuxShell();
+  const term2 = attachTerminal(shell2,
+    { out: "term2-output", input: "term2-input", prompt: "term2-prompt", wrap: "term2" },
+    'Terminal de ejercicios del Tema 2.');
+
+  renderExercises($("#ex-list"), DATA.exercises, term2.run, shell2);
+  setupQuiz({ startBtn: "start-quiz", area: "quiz-area", profNote: "prof-note", shuffleBox: "shuffle", srcName: "qsrc", data: DATA });
+  renderSummary($("#summary-area"), DATA.summary);
+
+  // ---------- Práctica de permisos absolutos (Tema 2) ----------------------
   (function permPractice() {
     const RWX = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
-    const symToOct = (sym) => {
-      let v = 0;
-      if (sym[0] === "r") v += 4; if (sym[1] === "w") v += 2; if (sym[2] === "x") v += 1;
-      return v;
-    };
-    const octStr = (o) => "" + o; // 1 dígito
+    const symToOct = (sym) => (sym[0] === "r" ? 4 : 0) + (sym[1] === "w" ? 2 : 0) + (sym[2] === "x" ? 1 : 0);
     const fullSym = (o3) => RWX[o3[0]] + RWX[o3[1]] + RWX[o3[2]];
-
-    // descripciones: cada una con su octal calculado
     const descPool = [
       ["Dueño: todo. Grupo: leer y ejecutar. Otros: leer y ejecutar.", "755"],
       ["Dueño: leer y escribir. Grupo: leer. Otros: leer.", "644"],
@@ -239,32 +272,23 @@
       ["Dueño: todo. Grupo: nada. Otros: nada.", "700"],
       ["Dueño: leer y escribir. Grupo: leer y escribir. Otros: nada.", "660"],
       ["Dueño: leer. Grupo: leer. Otros: nada (un fichero solo de consulta).", "440"],
-      ["Dueño: todo. Grupo: leer y ejecutar. Otros: nada (directorio dueño+grupo).", "750"],
+      ["Dueño: todo. Grupo: leer y ejecutar. Otros: nada.", "750"],
       ["Dueño: todo. Grupo: todo. Otros: leer y ejecutar.", "775"],
       ["Dueño: leer, escribir y ejecutar. Grupo: solo ejecutar. Otros: solo ejecutar.", "711"],
       ["Dueño: leer y ejecutar. Grupo: leer. Otros: leer.", "544"],
       ["Dueño: leer y escribir. Grupo: ejecutar. Otros: ejecutar.", "611"]
     ];
-
-    const qEl = $("#practice-q");
-    const ansEl = $("#practice-answer");
-    const fbEl = $("#practice-feedback");
-    const scoreEl = $("#practice-score");
-    let mode = "sym2oct";
-    let current = null;
-    let hits = 0, total = 0;
-
+    const qEl = $("#practice-q"), ansEl = $("#practice-answer"), fbEl = $("#practice-feedback"), scoreEl = $("#practice-score");
+    let mode = "sym2oct", current = null, hits = 0, total = 0;
+    const rnd = (n) => Math.floor(Math.random() * n);
     const randOct3 = () => [rnd(8), rnd(8), rnd(8)];
-    function rnd(n) { return Math.floor(Math.random() * n); }
 
     function newChallenge() {
-      fbEl.textContent = ""; fbEl.className = "practice-feedback";
-      ansEl.value = ""; ansEl.focus();
+      fbEl.textContent = ""; fbEl.className = "practice-feedback"; ansEl.value = ""; ansEl.focus();
       if (mode === "sym2oct") {
         const o = randOct3();
-        const sym = fullSym(o);
         current = { answer: "" + o[0] + o[1] + o[2], type: "oct" };
-        qEl.innerHTML = 'Escribe el <b>octal</b> de: <code class="big">' + sym + "</code>";
+        qEl.innerHTML = 'Escribe el <b>octal</b> de: <code class="big">' + fullSym(o) + "</code>";
         ansEl.placeholder = "ej. 754";
       } else if (mode === "oct2sym") {
         const o = randOct3();
@@ -278,26 +302,16 @@
         ansEl.placeholder = "ej. 644";
       }
     }
-
-    function normalizeSym(s) {
-      return s.trim().toLowerCase().replace(/\s+/g, "");
-    }
-
     function check() {
       if (!current) return;
       let val = ansEl.value.trim();
       if (!val) return;
       total++;
       let ok;
-      if (current.type === "oct") {
-        val = val.replace(/^0+(?=\d)/, ""); // quita ceros a la izquierda
-        ok = val === current.answer;
-      } else {
-        ok = normalizeSym(val) === current.answer;
-      }
+      if (current.type === "oct") { val = val.replace(/^0+(?=\d)/, ""); ok = val === current.answer; }
+      else ok = val.trim().toLowerCase().replace(/\s+/g, "") === current.answer;
       if (ok) {
-        hits++;
-        fbEl.className = "practice-feedback ok";
+        hits++; fbEl.className = "practice-feedback ok";
         fbEl.innerHTML = "✅ ¡Correcto! <code>" + current.answer + "</code>";
       } else {
         fbEl.className = "practice-feedback bad";
@@ -308,34 +322,34 @@
       }
       scoreEl.textContent = "Aciertos: " + hits + " / " + total;
     }
-
-    $$(".modebtn").forEach((b) =>
-      b.addEventListener("click", () => {
-        $$(".modebtn").forEach((x) => x.classList.remove("active"));
-        b.classList.add("active");
-        mode = b.dataset.mode;
-        newChallenge();
-      })
-    );
+    $$(".modebtn").forEach((b) => b.addEventListener("click", () => {
+      $$(".modebtn").forEach((x) => x.classList.remove("active"));
+      b.classList.add("active"); mode = b.dataset.mode; newChallenge();
+    }));
     $("#practice-check").addEventListener("click", check);
     $("#practice-new").addEventListener("click", newChallenge);
     ansEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        if (fbEl.textContent && fbEl.classList.contains("ok")) newChallenge();
-        else check();
-      }
+      if (e.key === "Enter") { if (fbEl.classList.contains("ok")) newChallenge(); else check(); }
     });
     newChallenge();
   })();
 
-  // ---------- Resumen -------------------------------------------------------
-  const sumArea = $("#summary-area");
-  DATA.summary.forEach((sec, idx) => {
-    const det = document.createElement("details");
-    det.className = "sum-card";
-    if (idx === 0) det.open = true;
-    let lis = sec.points.map((p) => "<li>" + p + "</li>").join("");
-    det.innerHTML = "<summary>" + sec.h + "</summary><ul>" + lis + "</ul>";
-    sumArea.appendChild(det);
-  });
+  // ========================================================================
+  //  TEMA 3
+  // ========================================================================
+  const usys1 = new UserSystem();
+  const t3term1 = attachTerminal(usys1,
+    { out: "t3-term-output", input: "t3-term-input", prompt: "t3-term-prompt", wrap: "t3-term" },
+    'Simulador de usuarios del Tema 3. Escribe <b style="color:#7ee787">help</b> para ver los comandos.');
+  $$(".chip", $("#theme-t3")).forEach((c) =>
+    c.addEventListener("click", () => { t3term1.run(c.dataset.cmd); $("#t3-term-input").focus(); }));
+
+  const usys2 = new UserSystem();
+  const t3term2 = attachTerminal(usys2,
+    { out: "t3-term2-output", input: "t3-term2-input", prompt: "t3-term2-prompt", wrap: "t3-term2" },
+    'Terminal de ejercicios del Tema 3.');
+
+  renderExercises($("#t3-ex-list"), DATA_T3.exercises, t3term2.run, usys2);
+  setupQuiz({ startBtn: "t3-start-quiz", area: "t3-quiz-area", profNote: "t3-prof-note", shuffleBox: "t3-shuffle", srcName: "t3-qsrc", data: DATA_T3 });
+  renderSummary($("#t3-summary-area"), DATA_T3.summary);
 })();

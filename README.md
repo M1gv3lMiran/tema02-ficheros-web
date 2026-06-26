@@ -1,15 +1,25 @@
-# Tema 2 — Ficheros GNU/Linux · Práctica interactiva
+# PAS — Práctica interactiva (Temas 2 y 3)
 
-Página web interactiva para repasar el **Tema 2 (Organización de un SO tipo GNU/Linux: sistema de ficheros)** de Programación y Administración de Sistemas.
+Página web interactiva para repasar **Programación y Administración de Sistemas**. Incluye un selector arriba para cambiar entre temas:
+
+- **📁 Tema 2 · Ficheros** — Organización del SO, sistema de ficheros, permisos, enlaces, FHS.
+- **👤 Tema 3 · Usuarios** — Gestión de usuarios y grupos, /etc/passwd, shadow passwords, hashing, chage, grupos.
 
 🔗 **Web:** _(activa GitHub Pages para obtener la URL — ver más abajo)_
 
-## ¿Qué incluye?
+## ¿Qué incluye cada tema?
 
-- **💻 Terminal interactiva**: un mini-shell con un sistema de ficheros virtual (en JavaScript puro, sin servidor) que ejecuta de verdad `ls -l`, `chmod` (simbólico y octal), `chown`, `chgrp`, `ln`, `ln -s`, `umask`, `touch`, `mkdir`, `stat`, `tree`… con permisos, nodos-i, enlaces y bits especiales (suid/sgid/sticky) bien modelados.
-- **📝 Ejercicios**: los ejercicios del PDF (permisos, sticky bit, umask, enlaces) con **comprobación automática** del estado del sistema de ficheros.
-- **❓ Test**: preguntas tipo test elaboradas a partir del contenido del PDF, con corrección y explicación al instante. Incluye un apartado para pegar las **preguntas del profesor**.
-- **📚 Resumen**: chuleta de repaso de todo el tema.
+Ambos temas tienen la misma estructura: **💻 Terminal · 📝 Ejercicios · ❓ Test · 📚 Resumen**.
+
+### Tema 2 (ficheros)
+- **Terminal**: mini-shell con sistema de ficheros virtual que ejecuta `ls -l`, `chmod` (simbólico y octal), `chown`, `chgrp`, `ln`, `ln -s`, `umask`, `touch`, `mkdir`, `stat`, `tree`… con permisos, nodos-i, enlaces y bits especiales (suid/sgid/sticky).
+- **Ejercicios**: los del PDF + práctica de **permisos absolutos** (generador simbólico↔octal) y demos de umask/enlaces, con comprobación automática.
+- **Test** y **Resumen** del tema.
+
+### Tema 3 (usuarios)
+- **Terminal**: simulador de gestión de usuarios con `/etc/passwd`, `/etc/shadow` y `/etc/group` virtuales. Comandos `useradd`, `adduser`, `usermod`, `userdel`, `passwd`, `chage`, `chsh`, `groups`, `id`, `newgrp`, `groupadd`…
+- **Ejercicios**: prácticas verificables (crear usuarios/grupos, caducidad con chage, bloquear acceso, cambiar grupo primario) + ejercicios conceptuales del PDF con respuesta desplegable.
+- **Test** (30 preguntas) y **Resumen** del tema.
 
 ## Sobre las preguntas del profesor (Wayground)
 

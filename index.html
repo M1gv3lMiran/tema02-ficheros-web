@@ -3,23 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tema 2 · Ficheros GNU/Linux — Práctica interactiva</title>
+  <title>PAS · Práctica interactiva (Temas 2 y 3)</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <h1>🐧 Tema 2 — Organización de un SO tipo GNU/Linux</h1>
-    <p class="subtitle">Sistema de ficheros · permisos · enlaces · FHS — Práctica interactiva</p>
+    <h1>🐧 Programación y Administración de Sistemas</h1>
+    <p class="subtitle">Práctica interactiva · terminal, ejercicios, test y resumen</p>
+    <nav class="theme-switch">
+      <button class="themebtn active" data-theme="theme-t2">📁 Tema 2 · Ficheros</button>
+      <button class="themebtn" data-theme="theme-t3">👤 Tema 3 · Usuarios</button>
+    </nav>
+  </header>
+
+  <main>
+  <!-- ===================================================================== -->
+  <!-- ============================ TEMA 2 ================================== -->
+  <!-- ===================================================================== -->
+  <div class="theme-content active" id="theme-t2">
     <nav class="tabs">
       <button class="tab active" data-tab="terminal">💻 Terminal</button>
       <button class="tab" data-tab="ejercicios">📝 Ejercicios</button>
       <button class="tab" data-tab="test">❓ Test</button>
       <button class="tab" data-tab="resumen">📚 Resumen</button>
     </nav>
-  </header>
 
-  <main>
-    <!-- ================= TERMINAL ================= -->
     <section id="terminal" class="panel active">
       <h2>Terminal Linux interactiva</h2>
       <p class="intro">Un mini-shell con sistema de ficheros virtual para practicar de verdad: <code>ls -l</code>, <code>chmod</code> (simbólico y octal), <code>chown</code>, <code>ln</code>, <code>ln -s</code>, <code>umask</code>, <code>touch</code>, <code>mkdir</code>… Escribe <code>help</code> para empezar. Las flechas ↑/↓ recorren el historial.</p>
@@ -27,7 +35,7 @@
         <div id="term-output" class="term-output"></div>
         <div class="term-input-line">
           <span id="term-prompt" class="prompt"></span>
-          <input id="term-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+          <input id="term-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
         </div>
       </div>
       <div class="term-quick">
@@ -42,7 +50,6 @@
       </div>
     </section>
 
-    <!-- ================= EJERCICIOS ================= -->
     <section id="ejercicios" class="panel">
       <h2>Práctica de permisos absolutos 🔢</h2>
       <p class="intro">El truco: cada dígito octal es la suma de <b>r=4</b>, <b>w=2</b>, <b>x=1</b>. Tres dígitos = dueño, grupo, otros.</p>
@@ -92,7 +99,6 @@
       </div>
     </section>
 
-    <!-- ================= TEST ================= -->
     <section id="test" class="panel">
       <h2>Preguntas tipo test</h2>
       <div class="test-controls">
@@ -109,19 +115,90 @@
       <div id="quiz-area"></div>
     </section>
 
-    <!-- ================= RESUMEN ================= -->
     <section id="resumen" class="panel">
       <h2>Resumen para repasar</h2>
       <div id="summary-area"></div>
     </section>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- ============================ TEMA 3 ================================== -->
+  <!-- ===================================================================== -->
+  <div class="theme-content" id="theme-t3">
+    <nav class="tabs">
+      <button class="tab active" data-tab="t3-terminal">💻 Terminal</button>
+      <button class="tab" data-tab="t3-ejercicios">📝 Ejercicios</button>
+      <button class="tab" data-tab="t3-test">❓ Test</button>
+      <button class="tab" data-tab="t3-resumen">📚 Resumen</button>
+    </nav>
+
+    <section id="t3-terminal" class="panel active">
+      <h2>Terminal de gestión de usuarios</h2>
+      <p class="intro">Simulador con <code>/etc/passwd</code>, <code>/etc/shadow</code> y <code>/etc/group</code> reales (virtuales). Estás como <b>pas</b> (administrador). Practica <code>useradd</code>, <code>adduser</code>, <code>usermod</code>, <code>passwd</code>, <code>chage</code>, <code>groups</code>, <code>id</code>, <code>newgrp</code>… Escribe <code>help</code>.</p>
+      <div id="t3-term" class="terminal">
+        <div id="t3-term-output" class="term-output"></div>
+        <div class="term-input-line">
+          <span id="t3-term-prompt" class="prompt"></span>
+          <input id="t3-term-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="term-quick">
+        <span>Pruébalo:</span>
+        <button class="chip" data-cmd="cat /etc/passwd">cat /etc/passwd</button>
+        <button class="chip" data-cmd="useradd -m ana">useradd -m ana</button>
+        <button class="chip" data-cmd="passwd ana">passwd ana</button>
+        <button class="chip" data-cmd="cat /etc/shadow">cat /etc/shadow</button>
+        <button class="chip" data-cmd="id ana">id ana</button>
+        <button class="chip" data-cmd="chage -l ana">chage -l ana</button>
+        <button class="chip" data-cmd="cat /etc/group">cat /etc/group</button>
+        <button class="chip" data-cmd="reset">reset</button>
+      </div>
+    </section>
+
+    <section id="t3-ejercicios" class="panel">
+      <h2>Ejercicios del Tema 3</h2>
+      <p class="intro">Los marcados como <b>práctica</b> se resuelven en la terminal de abajo y se validan con <b>Comprobar</b>. Los conceptuales tienen <b>Ver respuesta</b>.</p>
+      <div id="t3-ex-list"></div>
+      <h3>Terminal de los ejercicios</h3>
+      <div id="t3-term2" class="terminal">
+        <div id="t3-term2-output" class="term-output"></div>
+        <div class="term-input-line">
+          <span id="t3-term2-prompt" class="prompt"></span>
+          <input id="t3-term2-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+    </section>
+
+    <section id="t3-test" class="panel">
+      <h2>Preguntas tipo test</h2>
+      <div class="test-controls">
+        <label><input type="radio" name="t3-qsrc" value="mias" checked> Mis preguntas</label>
+        <label><input type="radio" name="t3-qsrc" value="prof"> Preguntas del profesor</label>
+        <label><input type="checkbox" id="t3-shuffle"> Barajar</label>
+        <button id="t3-start-quiz" class="btn">Empezar test</button>
+      </div>
+      <div id="t3-prof-note" class="note hidden">
+        ⚠️ No hay preguntas del profesor cargadas para este tema. Pégalas en
+        <code>data-tema3.js</code> → <code>profQuiz</code> y aparecerán aquí.
+      </div>
+      <div id="t3-quiz-area"></div>
+    </section>
+
+    <section id="t3-resumen" class="panel">
+      <h2>Resumen para repasar</h2>
+      <div id="t3-summary-area"></div>
+    </section>
+  </div>
   </main>
 
   <footer>
-    <p>Generado para el repaso del Tema 2 · Programación y Administración de Sistemas (2025-2026)</p>
+    <p>Generado para el repaso de PAS · Programación y Administración de Sistemas (2025-2026)</p>
   </footer>
 
   <script src="terminal.js"></script>
+  <script src="users-shell.js"></script>
   <script src="data.js"></script>
+  <script src="data-tema3.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
