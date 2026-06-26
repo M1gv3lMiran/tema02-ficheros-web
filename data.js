@@ -294,6 +294,165 @@ window.DATA = {
       ],
       a: 0,
       exp: "La t (sticky bit) en /tmp evita que un usuario borre ficheros de otro, aunque el directorio tenga w para todos."
+    },
+
+    // ----- Conversión simbólico <-> absoluto (del PDF) -----
+    {
+      q: "Convierte a octal: rwxr-xr-x",
+      opts: ["755", "754", "775", "750"],
+      a: 0,
+      exp: "rwx=4+2+1=7, r-x=4+0+1=5, r-x=5 → 755."
+    },
+    {
+      q: "Convierte a octal: r-xr--r--",
+      opts: ["544", "554", "444", "644"],
+      a: 0,
+      exp: "r-x=4+0+1=5, r--=4, r--=4 → 544."
+    },
+    {
+      q: "Convierte a octal: rw-r-----",
+      opts: ["640", "644", "620", "660"],
+      a: 0,
+      exp: "rw-=4+2=6, r--=4, ---=0 → 640."
+    },
+    {
+      q: "Convierte a octal: r-x--x--x",
+      opts: ["511", "555", "151", "711"],
+      a: 0,
+      exp: "r-x=4+0+1=5, --x=1, --x=1 → 511."
+    },
+    {
+      q: "Convierte a simbólico: 644",
+      opts: ["rw-r--r--", "rwxr--r--", "rw-rw-r--", "r--r--r--"],
+      a: 0,
+      exp: "6=rw-, 4=r--, 4=r-- → rw-r--r--."
+    },
+    {
+      q: "Convierte a simbólico: 755",
+      opts: ["rwxr-xr-x", "rwxrwxr-x", "rwxr--r--", "r-xr-xr-x"],
+      a: 0,
+      exp: "7=rwx, 5=r-x, 5=r-x → rwxr-xr-x."
+    },
+    {
+      q: "Convierte a simbólico: 610",
+      opts: ["rw---x---", "rwx--x---", "rw----x--", "r----x---"],
+      a: 0,
+      exp: "6=rw-, 1=--x, 0=--- → rw---x---."
+    },
+    {
+      q: "Convierte a simbólico: 631",
+      opts: ["rw--wx--x", "rwx-wx--x", "rw--w---x", "r---wx--x"],
+      a: 0,
+      exp: "6=rw-, 3=-wx, 1=--x → rw--wx--x."
+    },
+    {
+      q: "Quieres: dueño todo, grupo leer y ejecutar, otros solo ejecutar. ¿Octal?",
+      opts: ["751", "755", "741", "711"],
+      a: 0,
+      exp: "Dueño rwx=7, grupo r-x=5, otros --x=1 → 751."
+    },
+    {
+      q: "Un directorio con drwxr-x--- (750). ¿Quién puede ENTRAR (cd) y LISTAR (ls) su contenido?",
+      opts: [
+        "El dueño y el grupo; 'otros' no pueden ni entrar ni listar",
+        "Todos, porque tiene la x",
+        "Solo el dueño",
+        "Nadie salvo root"
+      ],
+      a: 0,
+      exp: "750 = dueño rwx (entra, lista, crea/borra), grupo r-x (entra y lista, no crea/borra), otros --- (nada)."
+    },
+
+    // ----- Interpretar ls -l (del PDF) -----
+    {
+      q: "ls -l muestra: -rwSr-xr-x para 'controlar'. La 'S' mayúscula significa…",
+      opts: [
+        "SUID activado pero SIN permiso de ejecución del dueño (estado inconsistente)",
+        "SUID activado y con ejecución del dueño",
+        "Sticky bit del dueño",
+        "Que es un enlace simbólico"
+      ],
+      a: 0,
+      exp: "s minúscula = bit especial + x. S mayúscula = bit especial activado SIN la x correspondiente (inconsistente). Aquí SUID sin x de usuario."
+    },
+    {
+      q: "Tienes 'mostrar' con -rwxr--r--, dueño pagutierrez. El usuario jsanchezm (grupo docentes, NO dueño) ¿qué puede hacer con él?",
+      opts: [
+        "Leerlo (le aplican los permisos de grupo/otros: r--), pero NO ejecutarlo",
+        "Ejecutarlo, porque el dueño tiene x",
+        "Modificarlo y ejecutarlo",
+        "Nada"
+      ],
+      a: 0,
+      exp: "Los permisos se aplican por el primer bloque que coincide: si no eres el dueño pero sí del grupo, te aplican los del grupo (r--). La x del dueño no se hereda."
+    },
+    {
+      q: "Un directorio drwxrwxrwt (como 'trabajos'). ¿Qué implica para borrar ficheros dentro?",
+      opts: [
+        "Todos pueden crear ficheros, pero cada uno solo puede borrar los SUYOS (sticky bit)",
+        "Todos pueden borrar cualquier fichero",
+        "Solo el dueño del directorio puede crear ficheros",
+        "Nadie puede borrar nada"
+      ],
+      a: 0,
+      exp: "rwxrwxrwt: w para todos permite crear, pero la t (sticky) restringe el borrado: solo el dueño del fichero (o del directorio, o root) lo borra."
+    },
+    {
+      q: "Para que un subdirectorio permita ENTRAR y ejecutar programas de su interior pero NO ver los nombres de los ficheros, ¿qué permisos necesita 'otros'?",
+      opts: [
+        "--x (solo ejecución): se puede atravesar el directorio pero no listar (ls falla)",
+        "r-- (solo lectura)",
+        "rw- (lectura y escritura)",
+        "r-x (lectura y ejecución)"
+      ],
+      a: 0,
+      exp: "En directorios x=atravesar/entrar y r=listar nombres. Con --x entras y accedes a un fichero si sabes su nombre, pero 'ls' no funciona."
+    },
+    {
+      q: "En ls -l, ¿cómo distingues si un fichero tiene un enlace FÍSICO adicional?",
+      opts: [
+        "Por el contador de enlaces (2ª columna tras los permisos): si es > 1 para un fichero, comparte nodo-i",
+        "Porque aparece una 'l' al principio",
+        "Por el tamaño en bytes",
+        "Por la fecha de modificación"
+      ],
+      a: 0,
+      exp: "La columna del número de enlaces indica cuántos nombres apuntan a ese nodo-i. >1 en un fichero normal = tiene enlaces físicos. (La 'l' inicial es del enlace SIMBÓLICO, otra cosa)."
+    },
+
+    // ----- Enlaces: qué se puede establecer (del PDF) -----
+    {
+      q: "Enlace hacia un archivo en el MISMO sistema de archivos: ¿qué tipos se pueden crear?",
+      opts: [
+        "Físico y simbólico (ambos)",
+        "Solo físico",
+        "Solo simbólico",
+        "Ninguno"
+      ],
+      a: 0,
+      exp: "Mismo sistema de ficheros + es un archivo (no directorio): valen ambos, físico (ln) y simbólico (ln -s)."
+    },
+    {
+      q: "Enlace hacia un archivo en OTRO sistema de archivos (otra partición): ¿qué tipos?",
+      opts: [
+        "Solo simbólico",
+        "Solo físico",
+        "Ambos",
+        "Ninguno"
+      ],
+      a: 0,
+      exp: "El enlace físico NO cruza particiones (el nodo-i es local a cada sistema de ficheros). Solo el simbólico, que guarda una ruta."
+    },
+    {
+      q: "Enlace hacia un DIRECTORIO (esté donde esté): ¿qué tipos se pueden crear normalmente?",
+      opts: [
+        "Solo simbólico",
+        "Solo físico",
+        "Ambos",
+        "Ninguno"
+      ],
+      a: 0,
+      exp: "A directorios no se permiten enlaces físicos (evita ciclos en el árbol). Solo el simbólico puede apuntar a un directorio."
     }
   ],
 
@@ -383,6 +542,112 @@ window.DATA = {
       },
       solutionText: "<code>cd /tmp</code><br><code>touch prueba</code><br><code>ln prueba enlace_fisico</code><br><code>ln -s prueba enlace_simbolico</code><br><code>ls -li prueba enlace_fisico enlace_simbolico</code>",
       goal: "enlace_fisico comparte nodo-i con prueba (2 enlaces); enlace_simbolico es de tipo l con nodo-i propio"
+    },
+
+    // ===== EJERCICIOS DEL PDF tema02-ejercicios.pdf =====
+    {
+      title: "PDF · Permisos — crear archivo con echo",
+      desc: "Como en el PDF: crea un archivo <code>saludo</code> con el contenido <code>HOLA!</code> usando <code>echo</code>, y dale permisos para que <b>solo</b> pueda ser <b>consultado (leído)</b> por su propietario y por el grupo (nada de escritura/ejecución, nada para otros).",
+      hint: 'echo "HOLA!" > saludo  →  consultar = leer. Propietario r, grupo r, otros nada → 440.',
+      setup: "",
+      check: function (sh) {
+        const n = sh.getNode("saludo");
+        if (!n) return false;
+        return sh.octal("saludo") === "440" && n.content.includes("HOLA!");
+      },
+      solutionText: '<code>echo "HOLA!" > saludo</code><br><code>chmod 440 saludo</code>  (simbólico: <code>chmod u=r,g=r,o= saludo</code>)<br>Compruébalo: <code>cat saludo</code> y <code>ls -l saludo</code> → <code>-r--r-----</code>',
+      goal: "saludo con contenido HOLA! y permisos 440 (-r--r-----)"
+    },
+    {
+      title: "PDF · umask — restringir a otros y abrir al grupo",
+      desc: "Ajusta la <code>umask</code> para que los <b>ficheros nuevos NO los pueda leer el resto</b> de usuarios y los <b>directorios nuevos NO los pueda listar</b> el resto, pero el <b>grupo pueda leer y escribir</b>. Crea <code>f1</code> y <code>d1</code> para comprobarlo.",
+      hint: "Quitar todo a 'otros' (rwx=7) y nada al grupo → umask 007. Fichero: 666-007=660. Directorio: 777-007=770.",
+      setup: "",
+      check: function (sh) {
+        return sh.octal("f1") === "660" && sh.octal("d1") === "770";
+      },
+      solutionText: "<code>umask 007</code><br><code>touch f1</code> → <code>-rw-rw----</code> (660)<br><code>mkdir d1</code> → <code>drwxrwx---</code> (770)<br>El grupo conserva rw; 'otros' se queda sin nada.",
+      goal: "f1 con 660 (rw-rw----) y d1 con 770 (rwxrwx---)"
+    },
+    {
+      title: "PDF · chmod — arch1 en modo 754 (simbólico)",
+      desc: "Crea <code>arch1</code> y fija sus permisos a <b>754</b> pero <b>en modo simbólico</b> (sin usar el número).",
+      hint: "754 = rwx / r-x / r--  →  u=rwx, g=rx, o=r.",
+      setup: "touch arch1",
+      check: function (sh) { return sh.octal("arch1") === "754"; },
+      solutionText: "<code>chmod u=rwx,g=rx,o=r arch1</code>  (equivale a <code>chmod 754 arch1</code>)",
+      goal: "arch1 con 754 (rwxr-xr--), puesto en simbólico"
+    },
+    {
+      title: "PDF · chmod — arch1 en rwxr-x--x (absoluto)",
+      desc: "Fija los permisos de <code>arch1</code> a <code>rwxr-x--x</code> pero <b>en modo absoluto</b> (con el número octal).",
+      hint: "rwx=7, r-x=5, --x=1 → 751.",
+      setup: "touch arch1",
+      check: function (sh) { return sh.octal("arch1") === "751"; },
+      solutionText: "<code>chmod 751 arch1</code>  → rwx(7) r-x(5) --x(1)",
+      goal: "arch1 con 751 (rwxr-x--x)"
+    },
+    {
+      title: "PDF · chmod — dir1 que todos puedan leer y entrar",
+      desc: "Crea <code>dir1</code> con permisos para que <b>todos puedan leer y entrar</b>, pero <b>solo el dueño modifique</b> sus archivos. Hazlo como quieras (simbólico o absoluto).",
+      hint: "Entrar=x, leer/listar=r, modificar archivos del dir=w. Dueño rwx, grupo r-x, otros r-x → 755.",
+      setup: "mkdir dir1",
+      check: function (sh) { return sh.octal("dir1") === "755"; },
+      solutionText: "Absoluto: <code>chmod 755 dir1</code><br>Simbólico: <code>chmod u=rwx,go=rx dir1</code>",
+      goal: "dir1 con 755 (rwxr-xr-x)"
+    },
+    {
+      title: "PDF · chmod — añade que el grupo modifique archivos",
+      desc: "Partiendo del <code>dir1</code> anterior (755), modifícalo para que <b>el grupo también pueda crear/borrar archivos</b> dentro.",
+      hint: "Crear/borrar en un directorio = permiso w. Solo hay que añadir w al grupo: g+w → 775.",
+      setup: "mkdir dir1\nchmod 755 dir1",
+      check: function (sh) { return sh.octal("dir1") === "775"; },
+      solutionText: "<code>chmod g+w dir1</code>  → 775 (rwxrwxr-x). El símbolo + suma sin tocar lo demás.",
+      goal: "dir1 con 775 (rwxrwxr-x)"
+    },
+    {
+      title: "PDF · chmod — exec.tar ejecutable por todos",
+      desc: "Crea <code>exec.tar</code> con permisos: <b>ejecutable por todos</b>, <b>legible por dueño y grupo</b> y <b>modificable solo por el dueño</b>.",
+      hint: "Dueño: r+w+x=7. Grupo: r+x=5 (lee y ejecuta, no escribe). Otros: x=1 (solo ejecuta). → 751.",
+      setup: "touch exec.tar",
+      check: function (sh) { return sh.octal("exec.tar") === "751"; },
+      solutionText: "Simbólico: <code>chmod u=rwx,g=rx,o=x exec.tar</code><br>Absoluto: <code>chmod 751 exec.tar</code>",
+      goal: "exec.tar con 751 (rwxr-x--x)"
+    },
+    {
+      title: "PDF · chmod — dir2 solo dueño y grupo recorren/leen",
+      desc: "Crea <code>dir2</code> de modo que <b>solo el dueño y el grupo</b> lo puedan <b>recorrer y leer</b>, y <b>solo el dueño</b> pueda <b>grabar y borrar</b> en él.",
+      hint: "Dueño: r+w+x=7. Grupo: r+x=5 (entra y lista, no escribe). Otros: 0. → 750.",
+      setup: "mkdir dir2",
+      check: function (sh) { return sh.octal("dir2") === "750"; },
+      solutionText: "Absoluto: <code>chmod 750 dir2</code><br>Simbólico: <code>chmod u=rwx,g=rx,o= dir2</code>",
+      goal: "dir2 con 750 (rwxr-x---)"
+    },
+    {
+      title: "DEMO · Enlace FÍSICO: el dato sobrevive",
+      desc: "Demuestra que un enlace físico comparte el nodo-i: crea <code>datos.txt</code> con contenido, hazle un enlace físico <code>copia</code>, <b>borra el original</b> y comprueba que <code>cat copia</code> <b>sigue mostrando el contenido</b>.",
+      hint: 'echo "info" > datos.txt ; ln datos.txt copia ; rm datos.txt ; cat copia',
+      setup: "",
+      check: function (sh) {
+        const orig = sh.getNode("datos.txt");
+        const copia = sh.getNode("copia");
+        return !orig && copia && copia.content.length > 0;
+      },
+      solutionText: '<code>echo "info importante" > datos.txt</code><br><code>ln datos.txt copia</code>  (ahora ls -li muestra 2 enlaces)<br><code>rm datos.txt</code><br><code>cat copia</code>  → sigue mostrando "info importante", porque el nodo-i no se borra mientras quede un enlace.',
+      goal: "datos.txt borrado, pero 'copia' conserva el contenido (mismo nodo-i)"
+    },
+    {
+      title: "DEMO · Enlace SIMBÓLICO: queda roto",
+      desc: "Demuestra que un enlace simbólico solo guarda la ruta: crea <code>real.txt</code>, un enlace simbólico <code>acceso</code>, <b>borra el original</b> y comprueba que <code>cat acceso</code> <b>da error</b> (enlace roto / colgante).",
+      hint: 'echo "hola" > real.txt ; ln -s real.txt acceso ; cat acceso (funciona) ; rm real.txt ; cat acceso (falla)',
+      setup: "",
+      check: function (sh) {
+        const real = sh.getNode("real.txt");
+        const acceso = sh.getNode("acceso");
+        return !real && acceso && acceso.type === "symlink";
+      },
+      solutionText: '<code>echo "hola" > real.txt</code><br><code>ln -s real.txt acceso</code><br><code>cat acceso</code> → "hola"<br><code>rm real.txt</code><br><code>cat acceso</code> → <b>error</b>: el symlink sigue existiendo pero apunta a un fichero que ya no está (su nodo-i era propio, no compartía el dato).',
+      goal: "real.txt borrado y 'acceso' sigue siendo un enlace simbólico (ahora roto)"
     }
   ],
 

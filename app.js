@@ -219,6 +219,115 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  // ---------- Práctica de permisos absolutos --------------------------------
+  (function permPractice() {
+    const RWX = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
+    const symToOct = (sym) => {
+      let v = 0;
+      if (sym[0] === "r") v += 4; if (sym[1] === "w") v += 2; if (sym[2] === "x") v += 1;
+      return v;
+    };
+    const octStr = (o) => "" + o; // 1 dígito
+    const fullSym = (o3) => RWX[o3[0]] + RWX[o3[1]] + RWX[o3[2]];
+
+    // descripciones: cada una con su octal calculado
+    const descPool = [
+      ["Dueño: todo. Grupo: leer y ejecutar. Otros: leer y ejecutar.", "755"],
+      ["Dueño: leer y escribir. Grupo: leer. Otros: leer.", "644"],
+      ["Dueño: todo. Grupo: leer y ejecutar. Otros: solo ejecutar.", "751"],
+      ["Dueño: leer y escribir. Grupo: leer. Otros: nada.", "640"],
+      ["Dueño: todo. Grupo: nada. Otros: nada.", "700"],
+      ["Dueño: leer y escribir. Grupo: leer y escribir. Otros: nada.", "660"],
+      ["Dueño: leer. Grupo: leer. Otros: nada (un fichero solo de consulta).", "440"],
+      ["Dueño: todo. Grupo: leer y ejecutar. Otros: nada (directorio dueño+grupo).", "750"],
+      ["Dueño: todo. Grupo: todo. Otros: leer y ejecutar.", "775"],
+      ["Dueño: leer, escribir y ejecutar. Grupo: solo ejecutar. Otros: solo ejecutar.", "711"],
+      ["Dueño: leer y ejecutar. Grupo: leer. Otros: leer.", "544"],
+      ["Dueño: leer y escribir. Grupo: ejecutar. Otros: ejecutar.", "611"]
+    ];
+
+    const qEl = $("#practice-q");
+    const ansEl = $("#practice-answer");
+    const fbEl = $("#practice-feedback");
+    const scoreEl = $("#practice-score");
+    let mode = "sym2oct";
+    let current = null;
+    let hits = 0, total = 0;
+
+    const randOct3 = () => [rnd(8), rnd(8), rnd(8)];
+    function rnd(n) { return Math.floor(Math.random() * n); }
+
+    function newChallenge() {
+      fbEl.textContent = ""; fbEl.className = "practice-feedback";
+      ansEl.value = ""; ansEl.focus();
+      if (mode === "sym2oct") {
+        const o = randOct3();
+        const sym = fullSym(o);
+        current = { answer: "" + o[0] + o[1] + o[2], type: "oct" };
+        qEl.innerHTML = 'Escribe el <b>octal</b> de: <code class="big">' + sym + "</code>";
+        ansEl.placeholder = "ej. 754";
+      } else if (mode === "oct2sym") {
+        const o = randOct3();
+        current = { answer: fullSym(o), type: "sym" };
+        qEl.innerHTML = 'Escribe el <b>simbólico</b> (9 caracteres) de: <code class="big">' + ("" + o[0] + o[1] + o[2]) + "</code>";
+        ansEl.placeholder = "ej. rwxr-xr--";
+      } else {
+        const d = descPool[rnd(descPool.length)];
+        current = { answer: d[1], type: "oct" };
+        qEl.innerHTML = "Escribe el <b>octal</b> que cumple:<br><span class='desc'>" + d[0] + "</span>";
+        ansEl.placeholder = "ej. 644";
+      }
+    }
+
+    function normalizeSym(s) {
+      return s.trim().toLowerCase().replace(/\s+/g, "");
+    }
+
+    function check() {
+      if (!current) return;
+      let val = ansEl.value.trim();
+      if (!val) return;
+      total++;
+      let ok;
+      if (current.type === "oct") {
+        val = val.replace(/^0+(?=\d)/, ""); // quita ceros a la izquierda
+        ok = val === current.answer;
+      } else {
+        ok = normalizeSym(val) === current.answer;
+      }
+      if (ok) {
+        hits++;
+        fbEl.className = "practice-feedback ok";
+        fbEl.innerHTML = "✅ ¡Correcto! <code>" + current.answer + "</code>";
+      } else {
+        fbEl.className = "practice-feedback bad";
+        const extra = current.type === "oct"
+          ? " &nbsp;(" + fullSym(current.answer.split("").map(Number)) + ")"
+          : " &nbsp;(" + current.answer.split("").reduce((a, _, i, arr) => i % 3 === 0 ? a.concat(symToOct(arr.slice(i, i + 3).join(""))) : a, []).join("") + ")";
+        fbEl.innerHTML = "❌ No. La respuesta es <code>" + current.answer + "</code>" + extra;
+      }
+      scoreEl.textContent = "Aciertos: " + hits + " / " + total;
+    }
+
+    $$(".modebtn").forEach((b) =>
+      b.addEventListener("click", () => {
+        $$(".modebtn").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        mode = b.dataset.mode;
+        newChallenge();
+      })
+    );
+    $("#practice-check").addEventListener("click", check);
+    $("#practice-new").addEventListener("click", newChallenge);
+    ansEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        if (fbEl.textContent && fbEl.classList.contains("ok")) newChallenge();
+        else check();
+      }
+    });
+    newChallenge();
+  })();
+
   // ---------- Resumen -------------------------------------------------------
   const sumArea = $("#summary-area");
   DATA.summary.forEach((sec, idx) => {

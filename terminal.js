@@ -195,6 +195,12 @@
   Shell.prototype.exec = function (line) {
     line = line.trim();
     if (!line) return { out: "", err: "" };
+    // redirección de salida a fichero:  cmd ... > fichero   ó   >> fichero
+    let redirect = null;
+    if (!line.includes("|")) {
+      const rm = line.match(/^(.*?)\s*(>>|>)\s*(\S+)\s*$/);
+      if (rm) { redirect = { append: rm[2] === ">>", file: rm[3] }; line = rm[1].trim(); }
+    }
     // soporte muy básico de pipes para ls | head, ls | grep
     if (line.includes("|")) {
       return this.execPipe(line);
@@ -204,11 +210,25 @@
     const args = argv.slice(1);
     const fn = this.commands[cmd];
     if (!fn) return { out: "", err: cmd + ": orden no encontrada" };
+    let res;
     try {
-      return fn.call(this, args);
+      res = fn.call(this, args);
     } catch (e) {
       return { out: "", err: e.message };
     }
+    if (redirect) {
+      const r = this.vfs.lookup(redirect.file, false);
+      let node = r.node;
+      if (!node) {
+        if (!r.parent) return { out: "", err: "bash: " + redirect.file + ": No existe la ruta" };
+        node = makeNode("file", 0o666 & ~this.vfs.umask, this.vfs.user, this.vfs.group);
+        r.parent.children[r.name] = node;
+      }
+      const text = res.out || "";
+      node.content = redirect.append ? (node.content + text + "\n") : (text + "\n");
+      return { out: "", err: res.err || "" };
+    }
+    return res;
   };
 
   Shell.prototype.execPipe = function (line) {

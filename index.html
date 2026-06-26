@@ -44,8 +44,43 @@
 
     <!-- ================= EJERCICIOS ================= -->
     <section id="ejercicios" class="panel">
-      <h2>Ejercicios del PDF</h2>
-      <p class="intro">Resuélvelos en la terminal de abajo y pulsa <b>Comprobar</b>. Cada ejercicio valida el estado real del sistema de ficheros.</p>
+      <h2>Práctica de permisos absolutos 🔢</h2>
+      <p class="intro">El truco: cada dígito octal es la suma de <b>r=4</b>, <b>w=2</b>, <b>x=1</b>. Tres dígitos = dueño, grupo, otros.</p>
+
+      <div class="ref-table">
+        <table>
+          <tr><th>Octal</th><th>Binario</th><th>rwx</th><th>Significado</th></tr>
+          <tr><td>0</td><td>000</td><td>---</td><td>nada</td></tr>
+          <tr><td>1</td><td>001</td><td>--x</td><td>ejecutar</td></tr>
+          <tr><td>2</td><td>010</td><td>-w-</td><td>escribir</td></tr>
+          <tr><td>3</td><td>011</td><td>-wx</td><td>escribir+ejecutar</td></tr>
+          <tr><td>4</td><td>100</td><td>r--</td><td>leer</td></tr>
+          <tr><td>5</td><td>101</td><td>r-x</td><td>leer+ejecutar</td></tr>
+          <tr><td>6</td><td>110</td><td>rw-</td><td>leer+escribir</td></tr>
+          <tr><td>7</td><td>111</td><td>rwx</td><td>todo</td></tr>
+        </table>
+      </div>
+
+      <div id="perm-practice" class="practice">
+        <div class="practice-modes">
+          <button class="modebtn active" data-mode="sym2oct">Simbólico → Octal</button>
+          <button class="modebtn" data-mode="oct2sym">Octal → Simbólico</button>
+          <button class="modebtn" data-mode="desc2oct">Descripción → Octal</button>
+        </div>
+        <div class="practice-box">
+          <div id="practice-q" class="practice-q"></div>
+          <div class="practice-input">
+            <input id="practice-answer" autocomplete="off" spellcheck="false" placeholder="tu respuesta">
+            <button id="practice-check" class="btn">Comprobar</button>
+            <button id="practice-new" class="btn secondary">Otra ⟳</button>
+          </div>
+          <div id="practice-feedback" class="practice-feedback"></div>
+          <div id="practice-score" class="practice-score">Aciertos: 0 / 0</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:34px">Ejercicios del PDF</h2>
+      <p class="intro">Resuélvelos en la terminal de abajo y pulsa <b>Comprobar</b>. Cada ejercicio valida el estado real del sistema de ficheros. Usa <b>Preparar</b> para crear los ficheros de partida.</p>
       <div id="ex-list"></div>
       <h3>Terminal de los ejercicios</h3>
       <div id="term2" class="terminal">
