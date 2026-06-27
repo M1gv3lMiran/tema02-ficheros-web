@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PAS · Práctica interactiva (Temas 2 y 3)</title>
+  <title>PAS · Práctica interactiva (Temas 2, 3 y 5)</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,6 +13,7 @@
     <nav class="theme-switch">
       <button class="themebtn active" data-theme="theme-t2">📁 Tema 2 · Ficheros</button>
       <button class="themebtn" data-theme="theme-t3">👤 Tema 3 · Usuarios</button>
+      <button class="themebtn" data-theme="theme-t5">⚙️ Tema 5 · Recursos</button>
     </nav>
   </header>
 
@@ -189,6 +190,75 @@
       <div id="t3-summary-area"></div>
     </section>
   </div>
+
+  <!-- ===================================================================== -->
+  <!-- ============================ TEMA 5 ================================== -->
+  <!-- ===================================================================== -->
+  <div class="theme-content" id="theme-t5">
+    <nav class="tabs">
+      <button class="tab active" data-tab="t5-terminal">💻 Terminal</button>
+      <button class="tab" data-tab="t5-ejercicios">📝 Ejercicios</button>
+      <button class="tab" data-tab="t5-test">❓ Test</button>
+      <button class="tab" data-tab="t5-resumen">📚 Resumen</button>
+    </nav>
+
+    <section id="t5-terminal" class="panel active">
+      <h2>Terminal de gestión de recursos</h2>
+      <p class="intro">Simulador con una tabla de procesos, memoria/swap, discos y temporizadores. Practica <code>ps</code>, <code>top</code>, <code>pstree</code>, <code>nice</code>, <code>renice</code>, <code>kill</code>, <code>killall</code>, <code>uptime</code>, <code>free</code>, <code>vmstat</code>, <code>df</code>, <code>du</code>, <code>iostat</code>, <code>swapon</code>, <code>crontab</code>, <code>at</code>… Escribe <code>help</code>.</p>
+      <div id="t5-term" class="terminal">
+        <div id="t5-term-output" class="term-output"></div>
+        <div class="term-input-line">
+          <span id="t5-term-prompt" class="prompt"></span>
+          <input id="t5-term-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="term-quick">
+        <span>Pruébalo:</span>
+        <button class="chip" data-cmd="ps aux">ps aux</button>
+        <button class="chip" data-cmd="ps aux | grep apache">ps aux | grep apache</button>
+        <button class="chip" data-cmd="top">top</button>
+        <button class="chip" data-cmd="renice 14 29822">renice 14 29822</button>
+        <button class="chip" data-cmd="kill -STOP 2307">kill -STOP 2307</button>
+        <button class="chip" data-cmd="free -h">free -h</button>
+        <button class="chip" data-cmd="df -h">df -h</button>
+        <button class="chip" data-cmd="reset">reset</button>
+      </div>
+    </section>
+
+    <section id="t5-ejercicios" class="panel">
+      <h2>Ejercicios del Tema 5</h2>
+      <p class="intro">Los marcados como <b>práctica</b> se resuelven en la terminal de abajo y se validan con <b>Comprobar</b>. Los conceptuales (los del PDF <i>EjerciciosTema5</i>) tienen <b>Ver respuesta</b>.</p>
+      <div id="t5-ex-list"></div>
+      <h3>Terminal de los ejercicios</h3>
+      <div id="t5-term2" class="terminal">
+        <div id="t5-term2-output" class="term-output"></div>
+        <div class="term-input-line">
+          <span id="t5-term2-prompt" class="prompt"></span>
+          <input id="t5-term2-input" class="term-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+    </section>
+
+    <section id="t5-test" class="panel">
+      <h2>Preguntas tipo test</h2>
+      <div class="test-controls">
+        <label><input type="radio" name="t5-qsrc" value="mias" checked> Mis preguntas</label>
+        <label><input type="radio" name="t5-qsrc" value="prof"> Preguntas del profesor</label>
+        <label><input type="checkbox" id="t5-shuffle"> Barajar</label>
+        <button id="t5-start-quiz" class="btn">Empezar test</button>
+      </div>
+      <div id="t5-prof-note" class="note hidden">
+        ⚠️ No hay preguntas del profesor cargadas para este tema. Pégalas en
+        <code>data-tema5.js</code> → <code>profQuiz</code> y aparecerán aquí.
+      </div>
+      <div id="t5-quiz-area"></div>
+    </section>
+
+    <section id="t5-resumen" class="panel">
+      <h2>Resumen para repasar</h2>
+      <div id="t5-summary-area"></div>
+    </section>
+  </div>
   </main>
 
   <footer>
@@ -197,8 +267,10 @@
 
   <script src="terminal.js"></script>
   <script src="users-shell.js"></script>
+  <script src="proc-shell.js"></script>
   <script src="data.js"></script>
   <script src="data-tema3.js"></script>
+  <script src="data-tema5.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -352,4 +352,23 @@
   renderExercises($("#t3-ex-list"), DATA_T3.exercises, t3term2.run, usys2);
   setupQuiz({ startBtn: "t3-start-quiz", area: "t3-quiz-area", profNote: "t3-prof-note", shuffleBox: "t3-shuffle", srcName: "t3-qsrc", data: DATA_T3 });
   renderSummary($("#t3-summary-area"), DATA_T3.summary);
+
+  // ========================================================================
+  //  TEMA 5
+  // ========================================================================
+  const psys1 = new ProcSystem();
+  const t5term1 = attachTerminal(psys1,
+    { out: "t5-term-output", input: "t5-term-input", prompt: "t5-term-prompt", wrap: "t5-term" },
+    'Simulador de recursos del Tema 5. Escribe <b style="color:#7ee787">help</b> para ver los comandos.');
+  $$(".chip", $("#theme-t5")).forEach((c) =>
+    c.addEventListener("click", () => { t5term1.run(c.dataset.cmd); $("#t5-term-input").focus(); }));
+
+  const psys2 = new ProcSystem();
+  const t5term2 = attachTerminal(psys2,
+    { out: "t5-term2-output", input: "t5-term2-input", prompt: "t5-term2-prompt", wrap: "t5-term2" },
+    'Terminal de ejercicios del Tema 5.');
+
+  renderExercises($("#t5-ex-list"), DATA_T5.exercises, t5term2.run, psys2);
+  setupQuiz({ startBtn: "t5-start-quiz", area: "t5-quiz-area", profNote: "t5-prof-note", shuffleBox: "t5-shuffle", srcName: "t5-qsrc", data: DATA_T5 });
+  renderSummary($("#t5-summary-area"), DATA_T5.summary);
 })();
